@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casel</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <!-- AUTH SCREEN -->
+    <div id="authScreen" class="screen active">
+        <div class="auth-container">
+            <div class="auth-header">
+                <div class="auth-logo">💬</div>
+                <h1>Casel</h1>
+                <p>Chat privately with groups</p>
+            </div>
+            
+            <div id="offlineBanner" class="offline-banner" style="display:none;">
+                ⚠️ No internet connection
+            </div>
+            
+            <!-- LOGIN FORM -->
+            <div id="loginForm" class="auth-form">
+                <input type="email" id="loginEmail" placeholder="Email address" autocomplete="email">
+                <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+                <div class="error-text" id="loginError"></div>
+                <button onclick="loginUser()" class="btn-primary" id="loginBtn">Log In</button>
+                <div class="auth-links">
+                    <span onclick="showForgotPassword()">Forgot password?</span>
+                </div>
+                <p class="auth-switch">
+                    New to Casel? 
+                    <span onclick="showSignup()">Create account</span>
+                </p>
+            </div>
+
+            <!-- SIGNUP FORM -->
+            <div id="signupForm" class="auth-form" style="display:none;">
+                <input type="text" id="signupNickname" placeholder="Nickname (letters only, max 20)" maxlength="20" autocomplete="off">
+                <input type="email" id="signupEmail" placeholder="Email address" autocomplete="email">
+                <input type="password" id="signupPassword" placeholder="Password (min 6 characters)" autocomplete="new-password">
+                <div class="error-text" id="signupError"></div>
+                <button onclick="signupUser()" class="btn-primary" id="signupBtn">Create Account</button>
+                <p class="auth-switch">
+                    Already have account? 
+                    <span onclick="showLogin()">Log In</span>
+                </p>
+            </div>
+
+            <!-- FORGOT PASSWORD FORM -->
+            <div id="forgotForm" class="auth-form" style="display:none;">
+                <p class="form-desc">Enter your email to receive a reset code</p>
+                <input type="email" id="forgotEmail" placeholder="Email address">
+                <div class="error-text" id="forgotError"></div>
+                <button onclick="sendResetCode()" class="btn-primary">Send Reset Code</button>
+                <p class="auth-switch">
+                    <span onclick="showLogin()">Back to login</span>
+                </p>
+            </div>
+
+            <!-- RESET PASSWORD FORM (after code verified) -->
+            <div id="resetForm" class="auth-form" style="display:none;">
+                <p class="form-desc">Code sent! Enter the 7-digit code and new password</p>
+                <input type="text" id="resetCode" placeholder="7-digit code" maxlength="7" autocomplete="off">
+                <input type="password" id="newPassword" placeholder="New password" autocomplete="new-password">
+                <input type="password" id="confirmPassword" placeholder="Confirm new password" autocomplete="new-password">
+                <div class="error-text" id="resetError"></div>
+                <button onclick="resetPassword()" class="btn-primary">Reset Password</button>
+                <p class="auth-switch">
+                    <span onclick="showLogin()">Back to login</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="mainScreen" class="screen">
+        <div id="syncBanner" class="sync-banner" style="display:none;">
+            🔄 Connected - Syncing
+        </div>
+        
+        <div class="app-layout">
+            
+            <!-- SIDEBAR -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2>Casel</h2>
+                    <button onclick="openProfile()" class="icon-btn" title="Profile">👤</button>
+                </div>
+                
+                <div class="sidebar-actions">
+                    <button onclick="showNewChatModal()" class="btn-new-chat">+ New Chat</button>
+                </div>
+                
+                <div class="chat-list" id="chatList"></div>
+                
+                <div class="sidebar-footer">
+                    <div id="onlineStatus" class="online-status">🟢 Online</div>
+                </div>
+            </div>
+
+            <!-- CHAT AREA -->
+            <div class="chat-area">
+                <div id="noChatSelected" class="no-chat">
+                    <div class="no-chat-icon">💬</div>
+                    <p>Select a chat or start a new one</p>
+                </div>
+
+                <div id="activeChat" class="active-chat" style="display:none;">
+                    <div class="chat-header">
+                        <div class="chat-header-info">
+                            <div class="chat-title" id="chatTitle">Chat Name</div>
+                            <div class="chat-meta" id="chatMeta"></div>
+                        </div>
+                        <button onclick="openChatSettings()" class="icon-btn">⋮</button>
+                    </div>
+
+                    <div class="messages-container" id="messagesContainer"></div>
+
+                    <div class="chat-input-bar">
+                        <input type="text" id="messageInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMessage()">
+                        <button onclick="sendMessage()" class="send-btn">↑</button>
+                    </div>
+                </div>
+                
+                <!-- CONTEXT MENU -->
+                <div id="contextMenu" class="context-menu" style="display:none;">
+                    <div class="context-item" onclick="copyMessage()">📋 Copy</div>
+                    <div class="context-item" onclick="editMessage()">✏️ Edit</div>
+                    <div class="context-item" onclick="deleteMessage()">🗑️ Delete for everyone</div>
+                    <div class="context-item" onclick="deleteForMe()">🗑️ Delete for me</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW CHAT MODAL -->
+    <div id="newChatModal" class="modal">
+        <div class="modal-content">
+            <h3>New Chat</h3>
+            <button onclick="generateInviteCode()" class="btn-modal">🎫 Generate Invite Code</button>
+            <div class="modal-divider">or</div>
+            <input type="text" id="inviteCodeInput" placeholder="Enter invite code">
+            <div class="error-text" id="inviteError"></div>
+            <button onclick="joinByInviteCode()" class="btn-modal">➕ Join Chat</button>
+            <button onclick="closeModal('newChatModal')" class="btn-cancel">Cancel</button>
+            
+            <div id="generatedCodeDisplay" style="display:none; margin-top:15px;">
+                <div class="code-label">Share this code (20 uses max):</div>
+                <div class="code-box" id="generatedCode">---</div>
+                <button onclick="copyGeneratedCode()" class="btn-small">Copy Code</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHAT SETTINGS MODAL -->
+    <div id="chatSettingsModal" class="modal">
+        <div class="modal-content">
+            <h3>Chat Settings</h3>
+            
+            <div class="settings-section">
+                <label>Chat Title</label>
+                <input type="text" id="settingsTitle" placeholder="Chat title">
+                <div class="hint-text" id="titleChangeHint"></div>
+                <button onclick="changeChatTitle()" class="btn-small">Update</button>
+            </div>
+            
+            <div class="settings-section">
+                <label>Members (<span id="memberCount">0</span>/20)</label>
+                <div class="member-list" id="memberList"></div>
+            </div>
+            
+            <div class="settings-section">
+                <button onclick="deleteChat()" class="btn-danger">Delete Chat</button>
+                <button onclick="leaveChat()" class="btn-danger" style="margin-top:5px;">Leave Chat</button>
+            </div>
+            
+            <button onclick="closeModal('chatSettingsModal')" class="btn-cancel">Close</button>
+        </div>
+    </div>
+
+    <!-- PROFILE MODAL -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <h3>Profile</h3>
+            
+            <div class="settings-section">
+                <label>Nickname</label>
+                <input type="text" id="profileNickname" placeholder="Nickname" maxlength="20">
+                <div class="error-text" id="profileError"></div>
+                <button onclick="updateProfile()" class="btn-small">Save</button>
+            </div>
+            
+            <div class="settings-section">
+                <label>Email</label>
+                <div class="info-text" id="profileEmail" style="cursor:pointer;">•••••••• (click to view)</div>
+            </div>
+            
+            <div class="settings-section">
+                <label>Privacy</label>
+                <button onclick="showPrivacyPolicy()" class="btn-small" style="width:100%;">Privacy Policy</button>
+            </div>
+            
+            <button onclick="logoutUser()" class="btn-danger">Log Out</button>
+            <button onclick="deleteAccount()" class="btn-danger">Delete Account</button>
+            <button onclick="closeModal('profileModal')" class="btn-cancel">Close</button>
+        </div>
+    </div>
+
+    <!-- EDIT MESSAGE MODAL -->
+    <div id="editMessageModal" class="modal">
+        <div class="modal-content">
+            <h3>Edit Message</h3>
+            <input type="text" id="editMessageInput" placeholder="Edit your message...">
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button onclick="saveEditedMessage()" class="btn-small" style="flex:1;">Save</button>
+                <button onclick="closeModal('editMessageModal')" class="btn-cancel" style="flex:1;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <!-- FORGOT PASSWORD FORM -->
+<div id="forgotForm" class="auth-form" style="display:none;">
+    <p class="form-desc">Enter your email to receive a 7-digit verification code</p>
+    <input type="email" id="forgotEmail" placeholder="Email address">
+    <div class="error-text" id="forgotError"></div>
+    <button onclick="sendResetCode()" class="btn-primary" id="sendCodeBtn">Send Verification Code</button>
+    <p class="auth-switch">
+        <span onclick="showLogin()">← Back to login</span>
+    </p>
+</div>
+
+<!-- RESET PASSWORD FORM -->
+<div id="resetForm" class="auth-form" style="display:none;">
+    <p class="form-desc">Enter the 7-digit code sent to your email</p>
+    <input type="text" id="resetCode" placeholder="7-digit verification code" maxlength="7" autocomplete="off" inputmode="numeric" pattern="[0-9]*">
+    <input type="password" id="newPassword" placeholder="New password (min 6 characters)" autocomplete="new-password">
+    <input type="password" id="confirmPassword" placeholder="Re-type new password" autocomplete="new-password">
+    <div class="error-text" id="resetError"></div>
+    <button onclick="resetPassword()" class="btn-primary">Change Password</button>
+    <p class="auth-switch">
+        <span onclick="showLogin()">← Back to login</span>
+    </p>
+</div>
+
+    <script src="firebase.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

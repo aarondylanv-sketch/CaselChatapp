@@ -95,8 +95,13 @@ async function signupUser() {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         errorEl.style.display = 'none';
+        // Will auto-redirect via auth state listener
     } catch (error) {
-        errorEl.textContent = error.message.replace('Firebase: ', '').replace('Error: ', '');
+        if (error.code === 'auth/email-already-in-use') {
+            errorEl.textContent = 'This email is already registered. Please log in instead.';
+        } else {
+            errorEl.textContent = error.message;
+        }
         errorEl.style.display = 'block';
     }
 }

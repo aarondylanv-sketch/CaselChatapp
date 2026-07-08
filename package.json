@@ -5,15 +5,17 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --win",
-    "obfuscate": "javascript-obfuscator app.js --output app.js --compact true --self-defending true"
+    "build:exe": "electron-builder --win"
   },
   "author": "Casel",
   "license": "SEE LICENSE IN license.txt",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0"
+  },
   "build": {
     "appId": "com.casel.chat",
     "productName": "Casel",
-    "copyright": "Copyright © 2025 Casel. All rights reserved.",
     "directories": {
       "output": "dist"
     },
@@ -25,37 +27,19 @@
         }
       ],
       "icon": "icon.png",
-      "legalTrademarks": "Casel is a registered trademark."
+      "sign": null
     },
     "nsis": {
       "oneClick": false,
-      "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Casel",
-      "installerIcon": "icon.ico",
-      "uninstallerIcon": "icon.ico",
-      "installerHeaderIcon": "icon.ico",
-      "license": "license.txt",
-      "deleteAppDataOnUninstall": true,
-      "displayLanguageSelector": false,
-      "packElevateHelper": false,
-      "allowElevation": false
+      "shortcutName": "Casel"
     },
-    "asar": true,
-    "asarUnpack": [],
-    "compression": "maximum",
     "files": [
       "**/*",
       "!node_modules",
-      "!dist",
-      "!*.md"
-    ],
-    "extraResources": []
-  },
-  "devDependencies": {
-    "electron": "^28.0.0",
-    "electron-builder": "^24.0.0"
+      "!dist"
+    ]
   }
 }

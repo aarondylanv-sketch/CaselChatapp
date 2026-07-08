@@ -1,0 +1,29 @@
+CASEL - PRIVATE GROUP CHAT
+Copyright (c) 2025 Casel. All Rights Reserved.
+
+PROPRIETARY SOFTWARE LICENSE
+
+THIS SOFTWARE IS PROPRIETARY AND CONFIDENTIAL. UNAUTHORIZED COPYING,
+DISTRIBUTION, MODIFICATION, OR USE OF THIS SOFTWARE IS STRICTLY PROHIBITED.
+
+1. NO REDISTRIBUTION: You may NOT distribute, sell, lease, rent, or
+   sublicense this software to any third party.
+
+2. NO MODIFICATION: You may NOT modify, decompile, reverse engineer,
+   disassemble, or create derivative works of this software.
+
+3. NO COPYING: You may NOT copy or reproduce this software in whole
+   or in part, except for a single backup copy for personal use.
+
+4. OWNERSHIP: This software is licensed, not sold. All rights, title,
+   and interest in and to this software remain with Casel.
+
+5. TERMINATION: Any violation of these terms immediately terminates
+   your right to use this software.
+
+6. LEGAL ACTION: Unauthorized use, copying, or distribution will
+   result in legal action to the fullest extent of the law.
+
+BY INSTALLING OR USING THIS SOFTWARE, YOU AGREE TO BE BOUND BY THESE TERMS.
+
+For permissions, contact the copyright holder.
